@@ -283,12 +283,14 @@ abstract class AbstractSocial extends Action
                 )
             );
         } else {
-            $raw = $resultRaw->setContents($content ?:
+                    $raw = $resultRaw->setContents($content ?: sprintf(
                 "<script>
-                    window.opener.location.reload(true);
-                    window.close();
-                </script>");
+                        window.opener.socialCallback('%s', window)
+                        window.close();
+                    </script>", $this->_loginPostRedirect())
+            );
         }
+
 
         return $raw;
     }

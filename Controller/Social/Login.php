@@ -91,14 +91,13 @@ class Login extends AbstractSocial
 
             $customer = $this->createCustomerProcess($userProfile, $type);
         }
-        if ($this->apiHelper->isCheckMode()) {
+        if ($this->apiHelper->isCheckMode() && false) {
             if ($customerData->getData('password_hash') === null) {
-                $userProfile->hash = '';
                 $this->session->setUserProfile($userProfile);
 
                 return $this->_appendJs(
                     sprintf(
-                        "<script>window.close();window.opener.fakeEmailCallback('%s','%s','%s');</script>",
+                        "<script>/*window.close();*/ console.log(window.opener.fakeEmailCallback('%s','%s','%s');</script>",
                         $type,
                         $userProfile->firstName,
                         $userProfile->lastName

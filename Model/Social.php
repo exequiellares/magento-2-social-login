@@ -22,7 +22,6 @@
 namespace Mageplaza\SocialLogin\Model;
 
 use Exception;
-use Hybrid_Auth;
 use Magento\Customer\Api\AccountManagementInterface;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
@@ -315,14 +314,14 @@ class Social extends AbstractModel
             'debug_file' => BP . '/var/log/social.log'
         ];
 
-        $auth = new Hybrid_Auth($config);
+        $auth = new \Hybridauth\Hybridauth($config);
 
         try {
             $adapter     = $auth->authenticate($apiName);
             $userProfile = $adapter->getUserProfile();
         } catch (Exception $e) {
-            $auth->logoutAllProviders();
-            $auth        = new Hybrid_Auth($config);
+            $auth->disconnectAllAdapters();
+            $auth        = new \Hybridauth\Hybridauth($config);
             $adapter     = $auth->authenticate($apiName);
             $userProfile = $adapter->getUserProfile();
         }

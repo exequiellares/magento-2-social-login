@@ -21,7 +21,10 @@
 
 namespace Mageplaza\SocialLogin\Controller\Social;
 
-use Hybrid_Endpoint;
+use Hybridauth\Exception\Exception;
+use Hybridauth\Hybridauth;
+use Hybridauth\HttpClient;
+use Hybridauth\Storage\Session;
 
 /**
  * Class Callback
@@ -30,6 +33,7 @@ use Hybrid_Endpoint;
  */
 class Callback extends AbstractSocial
 {
+
     /**
      * @inheritdoc
      */
@@ -49,11 +53,47 @@ class Callback extends AbstractSocial
         ) {
             return $this->_appendJs(sprintf('<script>window.close();</script>'));
         }
-        if (isset($request)) {
-            Hybrid_Endpoint::process($request);
-        }
 
-        Hybrid_Endpoint::process();
+        if (isset($param) && isset($param['hauth_done'])) {
+            return $this->processAuth();
+        }
+        return;
+    }
+
+    protected function processAuth()
+    {
+        $provider = $this->getRequest()->getParam('hauth_done');
+        $type = $this->apiHelper->setType(strtolower($provider));
+
+        $config = [
+            'base_url'   => $this->apiHelper->getBaseAuthUrl(null),
+            'providers'  => [
+                $provider => $this->getProviderData($provider)
+            ],
+            'debug_mode' => false,
+            'debug_file' => BP . '/var/log/social.log'
+        ];
+
+        try {
+
+            $hybridauth = new Hybridauth($config);
+            if ($provider) {
+                $parameters = '?' . http_build_query($this->getRequest()->getParams());
+                echo "
+            <script>
+                // Success
+                location.href = '/sociallogin/social/login/type/facebook/' + '$parameters';
+            </script>";
+                exit;
+            } else {
+                // TODO: Error
+            }
+
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+            echo $e->getMessage();
+        }
+        return;
     }
 
     /**
@@ -71,5 +111,24 @@ class Callback extends AbstractSocial
         }
 
         return $param;
+    }
+
+    /**
+     * @param $apiName
+     *
+     * @return array
+     */
+    public function getProviderData($apiName)
+    {
+        $data = [
+            'enabled' => $this->apiHelper->isEnabled(),
+            'keys'    => [
+                'id'     => $this->apiHelper->getAppId(),
+                'key'    => $this->apiHelper->getAppId(),
+                'secret' => $this->apiHelper->getAppSecret()
+            ]
+        ];
+
+        return array_merge($data, $this->apiHelper->getSocialConfig($apiName));
     }
 }
