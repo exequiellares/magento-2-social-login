@@ -26,7 +26,6 @@ use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\Store;
 use Mageplaza\SocialLogin\Helper\Data as HelperData;
 
-
 /**
  * Class Social
  *
@@ -89,7 +88,7 @@ class Social extends HelperData
             'Facebook'  => ['trustForwarded' => false, 'scope' => 'email, public_profile', 'callback' => $this->getAuthUrl('facebook')],
             'Twitter'   => ['includeEmail' => true],
             'LinkedIn'  => ['fields' => ['id', 'first-name', 'last-name', 'email-address']],
-            'Google'    => ['scope' => 'profile email'],
+            'Google'    => ['scope' => 'profile email', 'callback' => $this->getAuthUrl('google')],
             'Yahoo'     => ['scope' => 'profile'],
         ];
 

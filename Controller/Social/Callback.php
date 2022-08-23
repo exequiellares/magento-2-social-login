@@ -41,9 +41,6 @@ class Callback extends AbstractSocial
     {
         $param = $this->getRequest()->getParams();
 
-        if (isset($param['live.php'])) {
-            $request = array_merge($param, ['hauth_done' => 'Live']);
-        }
         if ($this->checkRequest('hauth_start', false)
             && (($this->checkRequest('error_reason', 'user_denied')
                     && $this->checkRequest('error', 'access_denied')
@@ -63,30 +60,21 @@ class Callback extends AbstractSocial
     protected function processAuth()
     {
         $provider = $this->getRequest()->getParam('hauth_done');
-        $type = $this->apiHelper->setType(strtolower($provider));
-
-        $config = [
-            'base_url'   => $this->apiHelper->getBaseAuthUrl(null),
-            'providers'  => [
-                $provider => $this->getProviderData($provider)
-            ],
-            'debug_mode' => false,
-            'debug_file' => BP . '/var/log/social.log'
-        ];
-
         try {
-
-            $hybridauth = new Hybridauth($config);
             if ($provider) {
-                $parameters = '?' . http_build_query($this->getRequest()->getParams());
+                $parameters = '?';
+                foreach ($this->getRequest()->getParams() as $key => $val) {
+                    $parameters .= $key . '=' . $val . '&';
+                }
+                $parameters = strtolower($provider) . '/?' . http_build_query($this->getRequest()->getParams());
                 echo "
             <script>
                 // Success
-                location.href = '/sociallogin/social/login/type/facebook/' + '$parameters';
+                location.href = '/sociallogin/social/login/type/' + '$parameters';
+                // TODO: Error
+
             </script>";
                 exit;
-            } else {
-                // TODO: Error
             }
 
         } catch (Exception $e) {
